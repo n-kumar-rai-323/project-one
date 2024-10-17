@@ -18,7 +18,7 @@ app.use("/", indexRouter)
 
 app.use((err, req,res,next)=>{
 const errMsg = err? err.toString() : "Something went wrong";
-res.status(500).json({data: null, msg : errMsg})
+res.status(500).json({data: null, msg : errMsg});
 })
 
 app.listen(PORT,()=>{
