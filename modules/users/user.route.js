@@ -1,7 +1,7 @@
 const multer = require("multer");
 const router = require('express').Router();
 const Controller = require("./user.controller");
-
+const {validate}=require("./user.validation")
 
 const storage = multer.diskStorage({
     destination : function(req, file,cb){
@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
 const upload = multer({storage});
 
 
-router.post("/login", async (req, res, next) => {
+router.post("/login",validate, async (req, res, next) => {
     try {
         const result = await Controller.login(req.body);
         res.json({data:result, msg:"User logged in successfully"});
