@@ -13,6 +13,16 @@ const storage = multer.diskStorage({
 });
 const upload = multer({storage});
 
+
+router.post("/login", async (req, res, next) => {
+    try {
+        const result = await Controller.login(req.body);
+        res.json({data:result, msg:"User logged in successfully"});
+    } catch (e) {
+        next(e)
+    }
+});
+
 router.post("/register",upload.single("image"), async (req, res, next) => {
     try {
         if(req.file){

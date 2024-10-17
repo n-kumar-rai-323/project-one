@@ -1,11 +1,12 @@
 
 const UserModel = require("./user.model"); // Correctly import the user model
 const { genHash, compareHash } = require("../../utils/secure");
-const { genOTP } = require("../../utils/token");
+const { genOTP, genToken } = require("../../utils/token");
 const { sendEmail } = require("../../services/mailer");
 
 
 const create = (payload) => { };
+
 const register = async (payload) => {
     const { password, roles, isActive, ...rest } = payload;
     const userExist = await UserModel.findOne({ email: rest?.email }); // Use UserModel here
@@ -55,7 +56,26 @@ const verifyEmailToken = async (payload) => {
     return { data: null, msg: "Thank you for varifying your email" };
 };
 
-const login = (payload) => { };
+const login = async (payload) => {
+    const { email, password } = payload;
+
+    //user find using email + blocked + active check
+    const user = await UserModel.findOne({ email, isActive: true, isBlocked: false });
+    if (!user) throw new Error("User not found");
+
+    //compare password with db stored pw
+    const isValidPw = compareHash(password, user?.password);
+    console.log(isValidPw)
+    if (!isValidPw) throw new Error("Username or Password didn't match");
+
+    //gentoken return that token
+    const data = {
+        name: user?.name,
+        email: user?.email,
+        roles: user?.roles
+    }
+    return genToken(data);
+};
 const genForgetPasswordToken = () => { };
 const verifyForgetPasswordToken = () => { };
 const changePassword = () => { };
