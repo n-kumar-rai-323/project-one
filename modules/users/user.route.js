@@ -25,4 +25,14 @@ router.post("/register",upload.single("image"), async (req, res, next) => {
     }
 });
 
+
+router.post("/verify-email", async (req, res, next) => {
+    try {
+        const result = await Controller.verifyEmailToken(req.body);
+        res.json(result)
+    } catch (e) {
+        next(e)
+    }
+});
+
 module.exports = router;
