@@ -76,10 +76,90 @@ const login = async (payload) => {
     }
     return genToken(data);
 };
-const genForgetPasswordToken = () => { };
-const verifyForgetPasswordToken = () => { };
-const changePassword = () => { };
-const resetPassword = () => { };
+
+
+
+const genForgetPasswordToken = async ({ email }) => {
+    //1. check email for user
+    const user = await UserModel.findOne({ email, isActive: true, isBlocked: false });
+    if (!user) throw new Error("User not found");
+
+    // 3. generate new token
+    const myToken = genOTP();
+
+    // 4.store token in database in user data 
+    await UserModel.updateOne({ email }, { token: myToken });
+
+    //5. Send token to user email
+    const isEmailSent = await genEmailToken(
+        user?.email,
+        "Forget Password for XYZ Hotel Management",
+        `<h1>Your Forget Password Token is  ${myToken}</h1>`
+    );
+
+    if (!isEmailSent) throw new Error("User email sending failed...");
+    return { data: null, msg: "please check your email for token" }
+
+
+};
+
+const verifyForgetPasswordToken = async({ email, token, newPassword }) => {
+    //1. check email for user
+    const user = await UserModel.findOne({ email, isActive: true, isBlocked: false });
+    if (!user) throw new Error("User not found");
+    //2. check token for user
+    const isValidToken = token === user?.token;
+    if (!isValidToken) throw new Error("Token mismatch");
+
+    //3. token match newPassword has 
+    const password = genHash(newPassword);
+
+
+    //4. update the user data with new password has and empty token field 
+    const updateUser = await UserModel.updateOne({ email }, { password, token: "" });
+    console.log(updateUser)
+    if (!updateUser) throw new Error("Forget Password Change failed");
+    return { data: null, msg: "Password Changed Successfully" };
+};
+const changePassword = async({email, oldPassword, newPassword}) => { 
+    //1. find the user using email; isblock : isActive
+    const user = await UserModel.findOne({email, isActive:true, isBlocked: false});
+    if(!user) throw new Error("User not found");
+
+    //2. compare the oldPassword store in the database
+    const isValidPw = compareHash(oldPassword, user?.password);
+    if(!isValidPw) throw new Error("Password mismatch");
+
+    //3. generate hash of new password
+    const password = genHash(newPassword);
+
+    //4. update the user data with new password
+    const updateUser = await UserModel.findOneAndUpdate(
+        {email},
+        {password},
+        {new:true} // ensure we get the upadted user document data 
+    )
+    if(!updateUser) throw new Error("Password Change failed");
+    return {data : null, msg:"Password Changed Successfully"};
+};
+
+const resetPassword = async({email, newPassword}) => { 
+     //1. find the user using email; isblock : isActive
+     const user = await UserModel.findOne({email, isActive:true, isBlocked: false});
+     if(!user) throw new Error("User not found");
+ 
+     //3. generate hash of new password
+     const password = genHash(newPassword);
+ 
+     //4. update the user data with new password
+     const updateUser = await UserModel.findOneAndUpdate(
+         {email},
+         {password},
+         {new:true} // ensure we get the upadted user document data 
+     )
+     if(!updateUser) throw new Error("Password reset failed");
+     return {data : null, msg:"Password Reset Successfully"};
+};
 const blockUser = () => { };
 const list = () => { };
 const getById = () => { };
