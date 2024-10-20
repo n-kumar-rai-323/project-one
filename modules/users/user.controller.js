@@ -143,11 +143,19 @@ const changePassword = async ({ email, oldPassword, newPassword }) => {
     return { data: null, msg: "Password Changed Successfully" };
 };
 
-const updateProfile = () => { };
+const updateProfile = async (payload) => {
+    const { updated_by: currentUser, ...rest } = payload;
+    return await UserModel.findOneAndUpdate({ _id: currentUser },
+        rest,
+        { new: true }).select("-password");
+
+};
+
+
 
 //admin controllers 
 
-const resetPassword = async ({ email, newPassword, updated_by}) => {
+const resetPassword = async ({ email, newPassword, updated_by }) => {
     //1. find the user using email; isblock : isActive
     const user = await UserModel.findOne({ email, isActive: true, isBlocked: false });
     if (!user) throw new Error("User not found");
@@ -158,7 +166,7 @@ const resetPassword = async ({ email, newPassword, updated_by}) => {
     //4. update the user data with new password
     const updateUser = await UserModel.findOneAndUpdate(
         { email },
-        { password , updated_by },
+        { password, updated_by },
         { new: true } // ensure we get the upadted user document data 
     )
     if (!updateUser) throw new Error("Password reset failed");
@@ -181,14 +189,31 @@ const blockUser = async ({ email, updated_by }) => {
         msg: `User ${updateUser?.isBlocked ? "blocked" : "unblocked"} Successfully`,
     };
 };
-const create = (payload) => { };
+const create = async (payload) => {
+    const { password, updated_by, ...rest } = payload;
+    rest.created_by = updated_by;
+    rest.password = genHash(password);
+    // return UserModel.create(rest);
+    const user = await UserModel.create(rest)
+    return UserModel.findOne({ email: user?.email }).select("-password");
+};
 const list = () => { };
-const getById = () => { };
-const updateById =()=>{}
+const getById = (_id) => {
+    return UserModel.findOne({ _id }).select("-password");
+};
+const updateById = async ({ id, payload }) => {
+    const user = await UserModel.findOne({ _id: id });
+    if (!user) throw new Error("User not found")
+    return await UserModel.findOneAndUpdate({ _id: id }, payload, {
+        new: true,
+    }).select("-password")
+};
+
+
 
 
 module.exports = {
     create, register, login, genEmailToken, verifyEmailToken,
     genForgetPasswordToken, verifyForgetPasswordToken,
-    changePassword, resetPassword, blockUser, list, getById, updateProfile
+    changePassword, resetPassword, blockUser, list, getById, updateProfile, updateById
 };

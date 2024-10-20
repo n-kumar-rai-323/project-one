@@ -12,7 +12,8 @@ const schema = new Schema(
         isBlocked: {type:Boolean, required:true, default:false},
         roles: { type: [String], enum: ["admin", "user"], default: ["user"] },
         isActive: { type: Boolean, required: true, default: false },
-        updated_by : String, //todo
+        updated_by : String, //todo,
+        created_by:String,
     }, {
         timestamps: true,
     }
