@@ -1,6 +1,7 @@
 const multer = require("multer");
 const router = require('express').Router();
 const Controller = require("./user.controller");
+const {secureAPI}=require("../../utils/secure")
 const {validate,forgetPasswordValidation}=require("./user.validation")
 
 const storage = multer.diskStorage({
@@ -63,7 +64,7 @@ router.post("/verify-fp-token",forgetPasswordValidation,async (req, res, next) =
     }
 });
 
-router.put("/change-password",async (req, res, next) => {
+router.put("/change-password",secureAPI(["admin", "user"]),async (req, res, next) => {
     try {
         const result =await Controller.changePassword(req.body);
         res.json(result);
@@ -74,9 +75,19 @@ router.put("/change-password",async (req, res, next) => {
 
 
 
-router.put("/reset-password",async (req, res, next) => {
+router.put("/reset-password",secureAPI(["admin"]),async (req, res, next) => {
     try {
         const result =await Controller.resetPassword(req.body);
+        res.json(result);
+    } catch (e) {
+        next(e)
+    }
+});
+
+
+router.patch("/block",secureAPI(["admin"]),async (req, res, next) => {
+    try {
+        const result =await Controller.blockUser(req.body);
         res.json(result);
     } catch (e) {
         next(e)
