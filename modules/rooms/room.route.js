@@ -15,7 +15,20 @@ router.get("/public", async (req, res, next) => {
     }
    
 });
+router.get("/public/:number", async (req, res, next) => {
+    try {
+        const result = await Controller.publicRoomInfo(req.params.number);
+        res.json({
+            data: result,
+            msg: "Room Info is shown successfully"
+        });
 
+    } catch (e) {
+        next(e)
+    }
+   
+});
+//admin
 router.get("/", secureAPI(["admin"]), async (req, res, next) => {
     try {
         const { name, page, limit, status } = req.query;
@@ -44,21 +57,8 @@ router.get("/:id",secureAPI(["admin"]), async (req, res, next) => {
     }
    
 });
-router.get("/:number", async (req, res, next) => {
-    try {
-        const result = await Controller.publicRoomInfo(req.params.number);
-        res.json({
-            data: result,
-            msg: "Room Info is shown successfully"
-        });
 
-    } catch (e) {
-        next(e)
-    }
-   
-});
-
-router.post("/", async (req, res, next) => {
+router.post("/",  secureAPI(["admin"]),async (req, res, next) => {
     try {
         const result = await Controller.create(req.body);
         res.json({
@@ -72,9 +72,7 @@ router.post("/", async (req, res, next) => {
    
 });
 
-
-
-router.put("/", async (req, res, next) => {
+router.put("/:id",  secureAPI(["admin"]),async (req, res, next) => {
     try {
         const result = await Controller.updateById(req.body);
         res.json({
@@ -88,7 +86,7 @@ router.put("/", async (req, res, next) => {
    
 });
 
-router.patch("/:id", async (req, res, next) => {
+router.patch("/:id",  secureAPI(["admin"]),async (req, res, next) => {
     try {
         const result = await Controller.updateStatus(req.params.id, req.body);
         res.json({
@@ -102,7 +100,7 @@ router.patch("/:id", async (req, res, next) => {
    
 });
 
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:number",  secureAPI(["admin"]),async (req, res, next) => {
     try {
         const result = await Controller.remove(req.params.id);
         res.json({
