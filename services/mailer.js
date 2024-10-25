@@ -16,7 +16,7 @@ transporter.verify((error, success)=>{
 
 const sendEmail = async({to, subject, htmlMessage})=>{
     const info = await transporter.sendMail({
-        from: `"XYZ Hotel Mgmt" <${process.env.SMTP_EMAIL}>`,
+        from: `"Gmail Service" <${process.env.SMTP_EMAIL}>`,
         to,
         subject,
         html:htmlMessage,

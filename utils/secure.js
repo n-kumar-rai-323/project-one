@@ -23,13 +23,12 @@ const secureAPI = (sysRole = []) => {
             if (!user) throw new Error("User not found");
             const isValidRole = sysRole.some((role) => user?.roles.includes(role));
             console.log({ isValidRole })
-            if (!isValidRole)
-                {
-                     throw new Error("User unauthorized")
-                     }else {
-                        req.body.updated_by = user?._id;
-                        next();
-                     }
+            if (!isValidRole) {
+                throw new Error("User unauthorized")
+            } else {
+                req.body.updated_by = user?._id;
+                next();
+            }
         } catch (e) {
             next(e)
         }
